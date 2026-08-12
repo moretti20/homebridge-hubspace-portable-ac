@@ -10,10 +10,9 @@ import { HubspacePlatform } from '../src/platform';
 import { isConfigValid } from '../src/config';
 import { createAccessoryForDevice } from '../src/accessories/device-accessory-factory';
 
-import hapModule from 'homebridge';
-const hap: any = hapModule;
-import axiosModule from 'axios';
-const axiosStub: any = axiosModule;
+import { hap, installAxiosStub } from './stubs';
+// Route every axios client the code builds to our in-memory fake cloud.
+const axiosStub: any = installAxiosStub();
 
 const dump = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'sim', 'device-dump.json'), 'utf8'));
 
