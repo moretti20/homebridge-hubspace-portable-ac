@@ -93,9 +93,11 @@ Three services on one accessory:
    slider is Low/High.
 
 **The Apple Home app does not render `RotationSpeed` on a `HeaterCooler`
-service.** That is why fan speed lives on Fanv2 services and why the
-HeaterCooler deliberately has no `RotationSpeed` characteristic. Do not add one
-back expecting it to show up in Home.
+service.** That is why fan speed also lives on the Fanv2 services — in stock
+Home those tiles are the only way to change speed. The HeaterCooler *does*
+carry a `RotationSpeed` (Auto/Low/High, same shared value, synced in `refresh`)
+so third-party apps that render it (Eve, Controller for HomeKit) put fan speed
+directly on the AC. Stock Home simply ignores it, so keep the Fanv2 tiles.
 
 `HeatingThresholdTemperature` is also deliberately absent, so Home shows a
 single "cool to" set point in Auto rather than a dual range the unit cannot

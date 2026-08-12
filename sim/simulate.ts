@@ -143,7 +143,7 @@ async function main(){
     assert('AC named after device', ch(acService, C.ConfiguredName).value, 'Garage AC');
     assert('cool fan named', ch(coolFan, C.ConfiguredName).value, 'Garage AC Cool');
     assert('fan only named', ch(fanOnly, C.ConfiguredName).value, 'Garage AC Fan Only');
-    assert('no fan slider on the HeaterCooler', acService.testCharacteristic(C.RotationSpeed), false);
+    assert('HeaterCooler now carries a fan slider', acService.testCharacteristic(C.RotationSpeed), true);
 
     assert('target temp range', ch(acService, C.CoolingThresholdTemperature).props,
         { minValue: 16, maxValue: 30, minStep: 0.5 });
@@ -186,6 +186,16 @@ async function main(){
     assert('cool fan still on after speed change', await ch(coolFan, C.Active)._get(), C.Active.ACTIVE);
     assert('fan only still off', await ch(fanOnly, C.Active)._get(), C.Active.INACTIVE);
     assert('slider reads back 100', await ch(coolFan, C.RotationSpeed)._get(), 100);
+    assert('AC tile slider mirrors the cool tile', await ch(acService, C.RotationSpeed)._get(), 100);
+
+    // The fan slider on the HeaterCooler must behave exactly like the Cool tile:
+    // set the shared speed, never touch mode or power.
+    writes.length = 0;
+    await ch(acService, C.RotationSpeed)._set(67);
+    assert('AC tile slider 67% picks low', writes.map(w => `${w.key}=${w.value}`), ['fan-speed::ac-fan-speed=fan-speed-2-050']);
+    assert('AC tile slider no mode write', writes.some(w => w.key === 'mode'), false);
+    assert('AC tile slider no power write', writes.some(w => w.key === 'power'), false);
+    await ch(coolFan, C.RotationSpeed)._set(100);
 
     writes.length = 0;
     await ch(coolFan, C.RotationSpeed)._set(67);

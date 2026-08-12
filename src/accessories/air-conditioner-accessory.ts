@@ -62,9 +62,11 @@ interface TemperatureRange{
  * Portable air conditioner (Hubspace device class `portable-air-conditioner`).
  *
  * The Apple Home app does not render a fan-speed slider on a HeaterCooler
- * service, so fan speed lives on two Fanv2 services instead. The unit can only
+ * service, so fan speed also lives on two Fanv2 services. The unit can only
  * be doing one thing at a time, so the two fan tiles are mutually exclusive:
- * whichever one you switch on turns the other off.
+ * whichever one you switch on turns the other off. The HeaterCooler carries a
+ * RotationSpeed too (Auto/Low/High) so apps that do render it - Eve, Controller
+ * for HomeKit - expose fan speed directly on the AC; stock Home ignores it.
  *
  * 1. HeaterCooler - power, Auto/Cool, current and target temperature.
  * 2. Fanv2 "Cool" - on means the unit is cooling; the slider sets the fan
@@ -372,6 +374,8 @@ export class AirConditionerAccessory extends HubspaceAccessory{
             this._acService.updateCharacteristic(C.CoolingThresholdTemperature, this.clampTarget(targetTemp));
         }
 
+        this._acService.updateCharacteristic(C.RotationSpeed, this.computeCoolFanSpeed());
+
         this._coolFanService.updateCharacteristic(C.Active, this.computeCoolActive());
         this._coolFanService.updateCharacteristic(C.RotationSpeed, this.computeCoolFanSpeed());
 
@@ -511,8 +515,18 @@ export class AirConditionerAccessory extends HubspaceAccessory{
             .onGet(this.getTargetTemperature.bind(this))
             .onSet(this.setTargetTemperature.bind(this));
 
-        // No RotationSpeed here on purpose: the Home app does not render a fan
-        // slider on a HeaterCooler, and having one would fight the Fanv2 tiles.
+        // Fan speed on the AC accessory itself, using the same Auto/Low/High
+        // stops as the Cool tile and writing the same shared device value.
+        //
+        // The stock Apple Home app does not render RotationSpeed on a
+        // HeaterCooler, so in Home this is invisible and the "<name> Cool" tile
+        // remains how you change speed. Third-party apps (Eve, Controller for
+        // HomeKit) do show it, which puts Low/High directly on the AC there.
+        // Like the tiles, moving it never changes the mode or the power state.
+        service.getCharacteristic(C.RotationSpeed)
+            .setProps({ minValue: 0, maxValue: 100, minStep: 1 })
+            .onGet(this.getCoolFanSpeed.bind(this))
+            .onSet(this.setCoolFanSpeed.bind(this));
     }
 
     private computeCurrentState(): number{
