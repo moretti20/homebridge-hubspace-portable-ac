@@ -25,7 +25,14 @@ export abstract class HubspaceAccessory{
         this.deviceService = platform.deviceService;
         this.device = accessory.context.device;
 
+        // Accessories cached by older versions can carry a stale name with stray
+        // whitespace (e.g. "Air Conditioner "). HAP rejects such names and warns
+        // it "may cause unresponsiveness", so normalise it on every load.
+        const displayName = (this.device.name ?? '').trim() || 'Hubspace Device';
+        this.accessory.displayName = displayName;
+
         this.accessory.getService(this.platform.Service.AccessoryInformation)!
+            .setCharacteristic(this.platform.Characteristic.Name, displayName)
             .setCharacteristic(this.platform.Characteristic.Manufacturer, this.device.manufacturer ?? 'N/A')
             .setCharacteristic(this.platform.Characteristic.Model, this.device.model.length > 0 ? this.device.model[0] : 'N/A')
             .setCharacteristic(this.platform.Characteristic.SerialNumber, this.device.deviceId ?? 'N/A');
