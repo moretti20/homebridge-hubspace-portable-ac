@@ -1,0 +1,55 @@
+{
+  "displayName": "Homebridge Hubspace",
+  "name": "@xenuiswatching/homebridge-hubspace",
+  "version": "2.3.4",
+  "description": "Homebridge plugin for controlling Hubspace accessories, including portable air conditioners.",
+  "homepage": "https://github.com/XenuIsWatching/homebridge-hubspace#readme",
+  "author": "Adam Simonicek & Ryan McClelland",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/XenuIsWatching/homebridge-hubspace.git"
+  },
+  "bugs": {
+    "url": "https://github.com/XenuIsWatching/homebridge-hubspace/issues"
+  },
+  "engines": {
+    "node": "^18.20.0 || ^20.9.0 || ^22.0.0 || ^24.0.0",
+    "homebridge": "^1.6.0 || ^2.0.0"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "config.schema.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "lint": "eslint \"src/**/*.ts\" --max-warnings=0",
+    "build": "rimraf ./dist && tsc",
+    "check": "tsc --noEmit",
+    "watch": "npm run build && npm link && nodemon",
+    "prepublishOnly": "npm run lint && npm run build"
+  },
+  "keywords": [
+    "homebridge-plugin",
+    "homebridge",
+    "hubspace",
+    "air-conditioner"
+  ],
+  "dependencies": {
+    "axios": "^1.7.7",
+    "color-convert": "^2.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "eslint": "^8.57.1",
+    "homebridge": "^1.8.5",
+    "nodemon": "^3.1.7",
+    "rimraf": "^5.0.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3"
+  }
+}

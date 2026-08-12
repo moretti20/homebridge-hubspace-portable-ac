@@ -1,0 +1,71 @@
+{
+  "id": "25899dd3-88e8-4460-9aed-1b0c3f708491",
+  "typeId": "metadevice.device",
+  "friendlyName": "Garage AC",
+  "deviceId": "8893ecc9ff1b34ba",
+  "children": [],
+  "description": {
+    "device": {
+      "defaultName": "Smart Mobile Air Conditioner",
+      "manufacturerName": "Home Comfort",
+      "model": "TBD",
+      "type": "device",
+      "deviceClass": "portable-air-conditioner",
+      "deviceInstance": "midea-cooling"
+    },
+    "functions": [
+      { "functionClass": "error", "functionInstance": "indoor-temperature-sensor-failed", "type": "category",
+        "values": [ { "name": "alerting", "deviceValues": [{ "type": "attribute", "key": "400", "value": "1" }], "range": {} },
+                    { "name": "normal", "deviceValues": [{ "type": "attribute", "key": "400", "value": "0" }], "range": {} } ] },
+      { "functionClass": "error", "functionInstance": "water-tray-full", "type": "category",
+        "values": [ { "name": "alerting", "deviceValues": [{ "type": "attribute", "key": "405", "value": "1" }], "range": {} },
+                    { "name": "normal", "deviceValues": [{ "type": "attribute", "key": "405", "value": "0" }], "range": {} } ] },
+      { "functionClass": "fan-speed", "functionInstance": "ac-fan-speed", "type": "category",
+        "values": [ { "name": "fan-speed-auto", "deviceValues": [{ "type": "attribute", "key": "3", "value": "0" }], "range": {} },
+                    { "name": "fan-speed-2-100", "deviceValues": [{ "type": "attribute", "key": "3", "value": "3" }], "range": {} },
+                    { "name": "fan-speed-2-050", "deviceValues": [{ "type": "attribute", "key": "3", "value": "1" }], "range": {} } ] },
+      { "functionClass": "timer", "type": "numeric",
+        "values": [ { "name": "timer", "deviceValues": [{ "type": "attribute", "key": "6" }], "range": { "min": 0, "max": 1440, "step": 30 } } ] },
+      { "functionClass": "power", "type": "category",
+        "values": [ { "name": "on", "deviceValues": [{ "type": "attribute", "key": "1", "value": "1" }], "range": {} },
+                    { "name": "off", "deviceValues": [{ "type": "attribute", "key": "1", "value": "0" }], "range": {} } ] },
+      { "functionClass": "continuous-fan", "type": "category",
+        "values": [ { "name": "off", "deviceValues": [{ "type": "attribute", "key": "7", "value": "0" }], "range": {} },
+                    { "name": "on", "deviceValues": [{ "type": "attribute", "key": "7", "value": "1" }], "range": {} } ] },
+      { "functionClass": "error", "functionInstance": "indoor-coil-temperature-sensor-failed", "type": "category",
+        "values": [ { "name": "alerting", "deviceValues": [{ "type": "attribute", "key": "403", "value": "1" }], "range": {} },
+                    { "name": "normal", "deviceValues": [{ "type": "attribute", "key": "403", "value": "0" }], "range": {} } ] },
+      { "functionClass": "temperature", "functionInstance": "current-temp", "type": "numeric",
+        "values": [ { "name": "current-temp", "deviceValues": [{ "type": "attribute", "key": "20" }], "range": { "min": -18.0, "max": 53.0, "step": 0.5 } } ] },
+      { "functionClass": "temperature", "functionInstance": "cooling-target", "type": "numeric",
+        "values": [ { "name": "cooling-target", "deviceValues": [{ "type": "attribute", "key": "10" }], "range": { "min": 16.0, "max": 30.0, "step": 0.5 } } ] },
+      { "functionClass": "sleep", "type": "category",
+        "values": [ { "name": "on", "deviceValues": [{ "type": "attribute", "key": "5", "value": "1" }], "range": {} },
+                    { "name": "off", "deviceValues": [{ "type": "attribute", "key": "5", "value": "0" }], "range": {} } ] },
+      { "functionClass": "mode", "type": "category",
+        "values": [ { "name": "fan", "deviceValues": [{ "type": "attribute", "key": "2", "value": "4" }], "range": {} },
+                    { "name": "auto-cool", "deviceValues": [{ "type": "attribute", "key": "2", "value": "0" }], "range": {} },
+                    { "name": "dehumidify", "deviceValues": [{ "type": "attribute", "key": "2", "value": "2" }], "range": {} },
+                    { "name": "cool", "deviceValues": [{ "type": "attribute", "key": "2", "value": "3" }], "range": {} } ] },
+      { "functionClass": "temperature-units", "type": "category",
+        "values": [ { "name": "fahrenheit", "deviceValues": [{ "type": "attribute", "key": "202", "value": "0" }], "range": {} },
+                    { "name": "celsius", "deviceValues": [{ "type": "attribute", "key": "202", "value": "1" }], "range": {} } ] }
+    ]
+  },
+  "state": {
+    "metadeviceId": "25899dd3-88e8-4460-9aed-1b0c3f708491",
+    "values": [
+      { "functionClass": "error", "functionInstance": "water-tray-full", "value": "normal" },
+      { "functionClass": "fan-speed", "functionInstance": "ac-fan-speed", "value": "fan-speed-auto" },
+      { "functionClass": "timer", "value": 0 },
+      { "functionClass": "power", "value": "off" },
+      { "functionClass": "continuous-fan", "value": "off" },
+      { "functionClass": "temperature", "functionInstance": "current-temp", "value": 35.0 },
+      { "functionClass": "temperature", "functionInstance": "cooling-target", "value": 22.0 },
+      { "functionClass": "sleep", "value": "off" },
+      { "functionClass": "mode", "value": "auto-cool" },
+      { "functionClass": "temperature-units", "value": "fahrenheit" },
+      { "functionClass": "available", "value": true }
+    ]
+  }
+}

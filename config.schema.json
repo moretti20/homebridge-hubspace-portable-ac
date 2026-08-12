@@ -1,0 +1,47 @@
+{
+  "pluginAlias": "Hubspace",
+  "pluginType": "platform",
+  "singular": true,
+  "headerDisplay": "Homebridge plugin for Hubspace accessories sold through Home Depot, including portable air conditioners.",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "title": "Name",
+        "type": "string",
+        "required": true,
+        "default": "Hubspace"
+      },
+      "username": {
+        "title": "Username",
+        "type": "string",
+        "required": true,
+        "description": "Your Hubspace username",
+        "placeholder": "Username"
+      },
+      "password": {
+        "title": "Password",
+        "type": "string",
+        "required": true,
+        "description": "Your Hubspace password",
+        "placeholder": "Password"
+      },
+      "dualColorSpace": {
+        "title": "Dual Color Space",
+        "type": "boolean",
+        "required": false,
+        "description": "Have RGB lights enumerate a second light which supports the temperature color space.",
+        "placeholder": "false"
+      },
+      "pollingInterval": {
+        "title": "Polling Interval (seconds)",
+        "type": "integer",
+        "required": false,
+        "default": 30,
+        "minimum": 0,
+        "maximum": 3600,
+        "description": "How often air conditioners are refreshed so that changes made on the unit itself or in the Hubspace app show up in the Home app. Set to 0 to disable. Values below 10 are treated as 10."
+      }
+    }
+  }
+}
