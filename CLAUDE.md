@@ -88,9 +88,13 @@ Three services on one accessory:
 
 1. `HeaterCooler` — power, Auto/Cool, current + target temperature.
 2. `Fanv2` subtype `ac-cool-fan`, "<name> Cool" — on means cooling; slider is
-   the fan speed used while cooling.
-3. `Fanv2` subtype `ac-fan-only`, "<name> Fan Only" — on means fan-only mode;
+   the fan speed used while cooling (Low/High).
+3. `Fanv2` subtype `ac-fan-only`, "<name> Fan" — on means fan-only mode;
    slider is Low/High.
+
+Both sliders are Low/High only — Auto is not offered as a slider stop. Turning
+one tile on pushes the other tile off in HomeKit immediately (see `pushState`),
+so they never both appear on.
 
 **The Apple Home app does not render `RotationSpeed` on a `HeaterCooler`
 service.** That is why fan speed also lives on the Fanv2 services — in stock
@@ -139,7 +143,7 @@ startup:
 
 ```
 [Garage AC] modes -> cool: cool, auto: auto-cool, fan: fan;
-cool fan stops -> [33%=fan-speed-auto, 67%=fan-speed-2-050, 100%=fan-speed-2-100];
+cool fan stops -> [50%=fan-speed-2-050, 100%=fan-speed-2-100];
 fan only stops -> [50%=fan-speed-2-050, 100%=fan-speed-2-100];
 target 16-30 step 0.5
 ```

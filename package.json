@@ -1,7 +1,7 @@
 {
   "displayName": "Homebridge Hubspace",
   "name": "@xenuiswatching/homebridge-hubspace",
-  "version": "2.3.6",
+  "version": "2.3.7",
   "description": "Homebridge plugin for controlling Hubspace accessories, including portable air conditioners.",
   "homepage": "https://github.com/XenuIsWatching/homebridge-hubspace#readme",
   "author": "Adam Simonicek & Ryan McClelland",

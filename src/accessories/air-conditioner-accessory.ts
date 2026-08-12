@@ -64,14 +64,15 @@ interface TemperatureRange{
  * The Apple Home app does not render a fan-speed slider on a HeaterCooler
  * service, so fan speed also lives on two Fanv2 services. The unit can only
  * be doing one thing at a time, so the two fan tiles are mutually exclusive:
- * whichever one you switch on turns the other off. The HeaterCooler carries a
- * RotationSpeed too (Auto/Low/High) so apps that do render it - Eve, Controller
- * for HomeKit - expose fan speed directly on the AC; stock Home ignores it.
+ * whichever one you switch on turns the other off, and the opposing tile is
+ * pushed off in HomeKit immediately. The HeaterCooler carries a RotationSpeed
+ * too (Low/High) so apps that render it - Eve, Controller for HomeKit - expose
+ * fan speed directly on the AC; stock Home ignores it.
  *
  * 1. HeaterCooler - power, Auto/Cool, current and target temperature.
  * 2. Fanv2 "Cool" - on means the unit is cooling; the slider sets the fan
- *    speed used while cooling (Auto / Low / High).
- * 3. Fanv2 "Fan Only" - on means fan-only mode; the slider sets Low / High.
+ *    speed used while cooling (Low / High).
+ * 3. Fanv2 "Fan" - on means fan-only mode; the slider sets Low / High.
  *
  * Both fan sliders write the same underlying device setting, because the unit
  * has a single fan-speed value shared across modes. Moving a slider never
@@ -92,9 +93,9 @@ export class AirConditionerAccessory extends HubspaceAccessory{
     private readonly _fanSpeeds: FanSpeedNames;
     private readonly _targetRange: TemperatureRange;
 
-    /** Slider stops while cooling: Auto plus every discrete speed. */
+    /** Slider stops while cooling: the discrete speeds (Low/High). */
     private readonly _coolFanStops: SpeedStop[];
-    /** Slider stops in fan-only mode: the discrete speeds, Auto makes no sense here. */
+    /** Slider stops in fan-only mode: the discrete speeds (Low/High). */
     private readonly _fanOnlyStops: SpeedStop[];
 
     private readonly _currentRange: TemperatureRange;
@@ -107,7 +108,7 @@ export class AirConditionerAccessory extends HubspaceAccessory{
     constructor(platform: HubspacePlatform, accessory: PlatformAccessory) {
         const name = accessory.context.device.name;
         const coolFan = new platform.Service.Fanv2(`${name} Cool`, SUBTYPE_COOL_FAN);
-        const fanOnly = new platform.Service.Fanv2(`${name} Fan Only`, SUBTYPE_FAN_ONLY);
+        const fanOnly = new platform.Service.Fanv2(`${name} Fan`, SUBTYPE_FAN_ONLY);
 
         super(platform, accessory, [
             platform.Service.HeaterCooler,
@@ -124,16 +125,17 @@ export class AirConditionerAccessory extends HubspaceAccessory{
         this._targetRange = this.resolveRange(FI_COOLING_TARGET, FALLBACK_MIN_TEMP, FALLBACK_MAX_TEMP, 0.5);
         this._currentRange = this.resolveRange(FI_CURRENT_TEMP, -20, 60, 0.1);
 
-        this._coolFanStops = AirConditionerAccessory.buildStops(
-            this._fanSpeeds.auto ? [this._fanSpeeds.auto, ...this._fanSpeeds.speeds] : this._fanSpeeds.speeds
-        );
+        // Both sliders are the discrete speeds only (Low/High). Auto is not
+        // offered as a slider position; the unit still uses its own auto fan in
+        // auto-cool mode, but the user asked for explicit Low/High.
+        this._coolFanStops = AirConditionerAccessory.buildStops(this._fanSpeeds.speeds);
         this._fanOnlyStops = AirConditionerAccessory.buildStops(this._fanSpeeds.speeds);
 
         this.logCapabilities();
 
         this.configureName(this._acService, this.device.name);
         this.configureName(this._coolFanService, `${this.device.name} Cool`);
-        this.configureName(this._fanOnlyService, `${this.device.name} Fan Only`);
+        this.configureName(this._fanOnlyService, `${this.device.name} Fan`);
 
         this.configureAirConditioner();
         this.configureCoolFan();
@@ -355,7 +357,20 @@ export class AirConditionerAccessory extends HubspaceAccessory{
 
     /** Fetches fresh state and pushes it into HomeKit. */
     private async refresh(): Promise<void>{
-        await this.ensureState(true);
+        // Non-forced so the write-grace window is honoured. Right after a local
+        // write our optimistic value is more accurate than a cloud read Afero
+        // has not caught up to yet; forcing a read here would visibly flip the
+        // tiles back to the old mode.
+        await this.ensureState();
+        this.pushState();
+    }
+
+    /**
+     * Pushes the current state (optimistic or freshly fetched) into HomeKit.
+     * Called immediately after a mode/power change so the mutually-exclusive
+     * tiles update at once instead of waiting for the next poll.
+     */
+    private pushState(): void{
         if(this._stateFetchedAt === 0) return;
 
         const C = this.platform.Characteristic;
@@ -574,7 +589,7 @@ export class AirConditionerAccessory extends HubspaceAccessory{
 
         await this.setMode(target);
         await this.ensurePowerOn();
-        this.scheduleRefresh(1500);
+        this.pushState();
     }
 
     private async getCurrentTemperature(): Promise<CharacteristicValue>{
@@ -636,13 +651,13 @@ export class AirConditionerAccessory extends HubspaceAccessory{
         if(!shouldBeActive){
             // Only cut power if fan-only is not the thing keeping the unit on.
             if(!this.isFanOnlyMode()) await this.setPower(false);
-            this.scheduleRefresh(1500);
+            this.pushState();
             return;
         }
 
         await this.ensureCoolingMode();
         await this.ensurePowerOn();
-        this.scheduleRefresh(1500);
+        this.pushState();
     }
 
     private computeCoolFanSpeed(): number{
@@ -669,7 +684,7 @@ export class AirConditionerAccessory extends HubspaceAccessory{
         // Deliberately does not touch the mode. Changing fan speed must never
         // stop the unit cooling.
         await this.write(FC_FAN_SPEED, FI_AC_FAN_SPEED, speed);
-        this.scheduleRefresh(1500);
+        this.pushState();
     }
 
     // ------------------------------------------------------------------
@@ -708,7 +723,7 @@ export class AirConditionerAccessory extends HubspaceAccessory{
         if(!shouldBeActive){
             // Only cut power if fan-only is what is currently running.
             if(this.isFanOnlyMode()) await this.setPower(false);
-            this.scheduleRefresh(1500);
+            this.pushState();
             return;
         }
 
@@ -726,7 +741,7 @@ export class AirConditionerAccessory extends HubspaceAccessory{
         }
 
         await this.ensurePowerOn();
-        this.scheduleRefresh(1500);
+        this.pushState();
     }
 
     private computeFanOnlySpeed(): number{
@@ -752,6 +767,6 @@ export class AirConditionerAccessory extends HubspaceAccessory{
         // Deliberately does not touch the mode either; the Active control owns
         // which mode the unit is in.
         await this.write(FC_FAN_SPEED, FI_AC_FAN_SPEED, speed);
-        this.scheduleRefresh(1500);
+        this.pushState();
     }
 }

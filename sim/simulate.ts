@@ -142,7 +142,7 @@ async function main(){
     assert('three functional services', accessory.services.length, 4); // + AccessoryInformation
     assert('AC named after device', ch(acService, C.ConfiguredName).value, 'Garage AC');
     assert('cool fan named', ch(coolFan, C.ConfiguredName).value, 'Garage AC Cool');
-    assert('fan only named', ch(fanOnly, C.ConfiguredName).value, 'Garage AC Fan Only');
+    assert('fan named', ch(fanOnly, C.ConfiguredName).value, 'Garage AC Fan');
     assert('HeaterCooler now carries a fan slider', acService.testCharacteristic(C.RotationSpeed), true);
 
     assert('target temp range', ch(acService, C.CoolingThresholdTemperature).props,
@@ -172,7 +172,7 @@ async function main(){
     await ch(coolFan, C.Active)._set(C.Active.ACTIVE);
     assert('cool fan on just powers up (mode already auto-cool)', writes.map(w => `${w.key}=${w.value}`), ['power=on']);
     assert('AC tile follows', await ch(acService, C.Active)._get(), C.Active.ACTIVE);
-    assert('cool fan slider shows Auto (33%)', await ch(coolFan, C.RotationSpeed)._get(), 33);
+    assert('cool fan slider shows Low (50%) - Auto is not a slider stop', await ch(coolFan, C.RotationSpeed)._get(), 50);
     assert('cooling because 35C > 22C', await ch(acService, C.CurrentHeaterCoolerState)._get(),
         C.CurrentHeaterCoolerState.COOLING);
 
@@ -204,7 +204,7 @@ async function main(){
 
     writes.length = 0;
     await ch(coolFan, C.RotationSpeed)._set(33);
-    assert('33% picks auto speed', writes.map(w => `${w.key}=${w.value}`), ['fan-speed::ac-fan-speed=fan-speed-auto']);
+    assert('low end of slider picks Low, never Auto', writes.map(w => `${w.key}=${w.value}`), ['fan-speed::ac-fan-speed=fan-speed-2-050']);
     assert('AC still on', await ch(acService, C.Active)._get(), C.Active.ACTIVE);
 
     // --- mode button still works
@@ -220,18 +220,20 @@ async function main(){
     await ch(acService, C.CoolingThresholdTemperature)._set(45);
     assert('target clamped to device max', writes.map(w => `${w.key}=${w.value}`), ['temperature::cooling-target=30']);
 
-    // --- mutual exclusion
+    // --- mutual exclusion (the unit has one mode at a time)
     writes.length = 0;
     await ch(fanOnly, C.Active)._set(C.Active.ACTIVE);
-    // Device was on Auto fan, which is meaningless in fan-only mode, so it is
-    // bumped to the slowest real speed.
-    assert('fan only takes over and leaves Auto', writes.map(w => `${w.key}=${w.value}`),
-        ['mode=fan', 'fan-speed::ac-fan-speed=fan-speed-2-050']);
-    assert('fan only on', await ch(fanOnly, C.Active)._get(), C.Active.ACTIVE);
+    // Device is already on a real speed here, so only the mode changes.
+    assert('fan takes over: mode only', writes.map(w => `${w.key}=${w.value}`), ['mode=fan']);
+    assert('fan on', await ch(fanOnly, C.Active)._get(), C.Active.ACTIVE);
     assert('cool fan turns itself off', await ch(coolFan, C.Active)._get(), C.Active.INACTIVE);
     assert('AC tile turns itself off', await ch(acService, C.Active)._get(), C.Active.INACTIVE);
+    // The fix: the cool tiles are pushed OFF in HomeKit immediately, not left
+    // showing ON until the next poll.
+    assert('cool tiles pushed OFF in HomeKit', [ch(acService, C.Active).value, ch(coolFan, C.Active).value],
+        [C.Active.INACTIVE, C.Active.INACTIVE]);
     assert('cool fan slider reads 0', await ch(coolFan, C.RotationSpeed)._get(), 0);
-    assert('fan only slider shows Low (50%)', await ch(fanOnly, C.RotationSpeed)._get(), 50);
+    assert('fan slider shows Low (50%)', await ch(fanOnly, C.RotationSpeed)._get(), 50);
 
     writes.length = 0;
     await ch(fanOnly, C.RotationSpeed)._set(100);
@@ -242,8 +244,9 @@ async function main(){
     writes.length = 0;
     await ch(coolFan, C.Active)._set(C.Active.ACTIVE);
     assert('cool tile takes back over', writes.map(w => `${w.key}=${w.value}`), ['mode=cool']);
-    assert('fan only now off', await ch(fanOnly, C.Active)._get(), C.Active.INACTIVE);
-    assert('fan only slider reads 0', await ch(fanOnly, C.RotationSpeed)._get(), 0);
+    assert('fan now off', await ch(fanOnly, C.Active)._get(), C.Active.INACTIVE);
+    assert('fan tile pushed OFF in HomeKit', ch(fanOnly, C.Active).value, C.Active.INACTIVE);
+    assert('fan slider reads 0', await ch(fanOnly, C.RotationSpeed)._get(), 0);
 
     // --- turning the idle tile off must not kill the running one
     writes.length = 0;
