@@ -38,8 +38,10 @@ export class SprinklerAccessory extends HubspaceAccessory{
     private async getActive(instance: DeviceFunction): Promise<CharacteristicValue>{
         const func = getDeviceFunctionDef(this.device.functions, DeviceFunction.Toggle, instance);
         const value = await this.deviceService.getValueAsBoolean(this.device.deviceId, func.values[0].deviceValues[0].key);
-        if(isNullOrUndefined(value)) throw new this.platform.api.hap.HapStatusError(
-            this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
+        if(isNullOrUndefined(value)) {
+            throw new this.platform.api.hap.HapStatusError(
+                this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
+        }
         return value ? this.platform.Characteristic.Active.ACTIVE : this.platform.Characteristic.Active.INACTIVE;
     }
 
@@ -58,8 +60,10 @@ export class SprinklerAccessory extends HubspaceAccessory{
     private async getBatteryLevel(): Promise<CharacteristicValue>{
         const func = getDeviceFunctionDef(this.device.functions, DeviceFunction.BatteryLevel);
         const value = await this.deviceService.getValueAsInteger(this.device.deviceId, func.values[0].deviceValues[0].key);
-        if(isNullOrUndefined(value)) throw new this.platform.api.hap.HapStatusError(
-            this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
+        if(isNullOrUndefined(value)) {
+            throw new this.platform.api.hap.HapStatusError(
+                this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
+        }
         return value!;
     }
 }

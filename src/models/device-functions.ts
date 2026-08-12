@@ -1,6 +1,10 @@
 import type { DeviceFunctionDef } from './device-function-def';
 import type { DeviceFunctionResponse } from '../responses/device-function-response';
 
+/* eslint-disable @typescript-eslint/no-duplicate-enum-values --
+ * Several logical functions intentionally share the same Afero functionClass
+ * string (e.g. Power/OutletPower, CurrentTemperature/CoolingTarget) and are
+ * disambiguated by functionInstance in the DeviceFunctions table below. */
 export enum DeviceFunction{
     Power = 'power',
     Brightness = 'brightness',
@@ -24,6 +28,7 @@ export enum DeviceFunction{
     AcFanSpeed = 'fan-speed',
     Mode = 'mode'
 }
+/* eslint-enable @typescript-eslint/no-duplicate-enum-values */
 
 export const DeviceFunctions: DeviceFunctionDef[] = [
     { functionClass: DeviceFunction.Power, functionInstanceName: DeviceFunction.FanLightPower },

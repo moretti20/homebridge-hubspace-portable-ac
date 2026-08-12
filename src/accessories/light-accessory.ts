@@ -23,8 +23,10 @@ export class LightAccessory extends HubspaceAccessory{
     private async getOn(): Promise<CharacteristicValue>{
         const func = getDeviceFunctionDef(this.device.functions, DeviceFunction.Power);
         const value = await this.deviceService.getValueAsBoolean(this.device.deviceId, func.values[0].deviceValues[0].key);
-        if(isNullOrUndefined(value)) throw new this.platform.api.hap.HapStatusError(
-            this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
+        if(isNullOrUndefined(value)) {
+            throw new this.platform.api.hap.HapStatusError(
+                this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
+        }
         return value!;
     }
 
@@ -36,8 +38,10 @@ export class LightAccessory extends HubspaceAccessory{
     private async getBrightness(): Promise<CharacteristicValue>{
         const func = getDeviceFunctionDef(this.device.functions, DeviceFunction.Brightness);
         const value = await this.deviceService.getValueAsInteger(this.device.deviceId, func.values[0].deviceValues[0].key);
-        if(isNullOrUndefined(value)) throw new this.platform.api.hap.HapStatusError(
-            this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
+        if(isNullOrUndefined(value)) {
+            throw new this.platform.api.hap.HapStatusError(
+                this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
+        }
         return value!;
     }
 

@@ -7,7 +7,8 @@ export interface AferoErrorResponse{
     path: string;
 }
 
-export function isAferoError(error: any): error is AferoErrorResponse{
+export function isAferoError(error: unknown): error is AferoErrorResponse{
     if(error === null || typeof error !== 'object') return false;
-    return isNullOrUndefined(error.timestamp, error.status, error.status_description, error.path);
+    const e = error as Record<string, unknown>;
+    return isNullOrUndefined(e.timestamp, e.status, e.status_description, e.path);
 }

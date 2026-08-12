@@ -46,12 +46,19 @@ export function hsvToRgb(h: number, s: number, v: number): [number, number, numb
     const m = v - c;
     let r = 0, g = 0, b = 0;
 
-    if (h >= 0 && h < 1) { r = c; g = x; }
-    else if (h < 2) { r = x; g = c; }
-    else if (h < 3) { g = c; b = x; }
-    else if (h < 4) { g = x; b = c; }
-    else if (h < 5) { r = x; b = c; }
-    else if (h < 6) { r = c; b = x; }
+    if (h >= 0 && h < 1) {
+        r = c; g = x;
+    } else if (h < 2) {
+        r = x; g = c;
+    } else if (h < 3) {
+        g = c; b = x;
+    } else if (h < 4) {
+        g = x; b = c;
+    } else if (h < 5) {
+        r = x; b = c;
+    } else if (h < 6) {
+        r = c; b = x;
+    }
 
     return [
         Math.round((r + m) * 255),
