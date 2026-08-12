@@ -114,7 +114,10 @@ export const hap: any = {
     Service: FakeService,
     Characteristic,
     HapStatusError,
-    HAPStatus
+    HAPStatus,
+    // Deterministic stand-in for HAP's UUID generator; the sim only needs a
+    // stable string per device id, not a real v5 UUID.
+    uuid: { generate: (seed: string) => `uuid-${seed}` }
 };
 
 // ---- fake axios --------------------------------------------------------
