@@ -84,13 +84,17 @@ Device class `portable-air-conditioner`. Reference metadata and state are in
 
 ### HomeKit layout and why
 
-Three services on one accessory:
+Four services on one accessory:
 
 1. `HeaterCooler` — power, Auto/Cool, current + target temperature.
 2. `Fanv2` subtype `ac-cool-fan`, "<name> Cool" — on means cooling; slider is
    the fan speed used while cooling (Low/High).
 3. `Fanv2` subtype `ac-fan-only`, "<name> Fan" — on means fan-only mode;
    slider is Low/High.
+4. `TemperatureSensor` subtype `ac-temp-sensor`, "<name> Temperature" — mirrors
+   the current temperature. Exists only so the Home app offers "temperature
+   rises above / drops below" automation triggers; the HeaterCooler's own
+   current temperature is not selectable as an automation trigger in Home.
 
 Both sliders are Low/High only — Auto is not offered as a slider stop. Turning
 one tile on pushes the other tile off in HomeKit immediately (see `pushState`),

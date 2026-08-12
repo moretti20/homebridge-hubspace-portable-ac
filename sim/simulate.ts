@@ -131,6 +131,7 @@ async function main(){
     const acService = accessory.services.find((s: any) => s.UUID === hap.Service.HeaterCooler.UUID);
     const coolFan = accessory.services.find((s: any) => s.subtype === 'ac-cool-fan');
     const fanOnly = accessory.services.find((s: any) => s.subtype === 'ac-fan-only');
+    const tempSensor = accessory.services.find((s: any) => s.subtype === 'ac-temp-sensor');
 
     const results: string[] = [];
     const assert = (label: string, actual: unknown, expected: unknown) => {
@@ -139,11 +140,13 @@ async function main(){
     };
 
     // --- layout
-    assert('three functional services', accessory.services.length, 4); // + AccessoryInformation
+    assert('four functional services', accessory.services.length, 5); // + AccessoryInformation
     assert('AC named after device', ch(acService, C.ConfiguredName).value, 'Garage AC');
     assert('cool fan named', ch(coolFan, C.ConfiguredName).value, 'Garage AC Cool');
     assert('fan named', ch(fanOnly, C.ConfiguredName).value, 'Garage AC Fan');
+    assert('temperature sensor named', ch(tempSensor, C.ConfiguredName).value, 'Garage AC Temperature');
     assert('HeaterCooler now carries a fan slider', acService.testCharacteristic(C.RotationSpeed), true);
+    assert('temperature sensor reports current temp', await ch(tempSensor, C.CurrentTemperature)._get(), 35);
 
     assert('target temp range', ch(acService, C.CoolingThresholdTemperature).props,
         { minValue: 16, maxValue: 30, minStep: 0.5 });

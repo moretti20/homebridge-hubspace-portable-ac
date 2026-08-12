@@ -16,6 +16,7 @@ const FI_COOLING_TARGET = 'cooling-target';
 
 const SUBTYPE_COOL_FAN = 'ac-cool-fan';
 const SUBTYPE_FAN_ONLY = 'ac-fan-only';
+const SUBTYPE_TEMP_SENSOR = 'ac-temp-sensor';
 
 /** How long a cached state read stays valid before another fetch is made. */
 const STATE_CACHE_MS = 5000;
@@ -88,6 +89,7 @@ export class AirConditionerAccessory extends HubspaceAccessory{
     private readonly _acService: Service;
     private readonly _coolFanService: Service;
     private readonly _fanOnlyService: Service;
+    private readonly _tempSensorService: Service;
 
     private readonly _modes: ModeNames;
     private readonly _fanSpeeds: FanSpeedNames;
@@ -109,16 +111,22 @@ export class AirConditionerAccessory extends HubspaceAccessory{
         const name = accessory.context.device.name;
         const coolFan = new platform.Service.Fanv2(`${name} Cool`, SUBTYPE_COOL_FAN);
         const fanOnly = new platform.Service.Fanv2(`${name} Fan`, SUBTYPE_FAN_ONLY);
+        // A standalone Temperature Sensor so Home offers "when temperature rises
+        // above / drops below" automation triggers; the HeaterCooler's own
+        // current temperature is not selectable as a trigger in the Home app.
+        const tempSensor = new platform.Service.TemperatureSensor(`${name} Temperature`, SUBTYPE_TEMP_SENSOR);
 
         super(platform, accessory, [
             platform.Service.HeaterCooler,
             coolFan,
-            fanOnly
+            fanOnly,
+            tempSensor
         ]);
 
         this._acService = this.services[0];
         this._coolFanService = this.services[1];
         this._fanOnlyService = this.services[2];
+        this._tempSensorService = this.services[3];
 
         this._modes = this.resolveModeNames();
         this._fanSpeeds = this.resolveFanSpeedNames();
@@ -136,10 +144,12 @@ export class AirConditionerAccessory extends HubspaceAccessory{
         this.configureName(this._acService, this.device.name);
         this.configureName(this._coolFanService, `${this.device.name} Cool`);
         this.configureName(this._fanOnlyService, `${this.device.name} Fan`);
+        this.configureName(this._tempSensorService, `${this.device.name} Temperature`);
 
         this.configureAirConditioner();
         this.configureCoolFan();
         this.configureFanOnly();
+        this.configureTemperatureSensor();
         this.removeStaleServices();
 
         this.startPolling();
@@ -382,6 +392,7 @@ export class AirConditionerAccessory extends HubspaceAccessory{
         const currentTemp = this.readNumber(FC_TEMPERATURE, FI_CURRENT_TEMP);
         if(currentTemp !== undefined){
             this._acService.updateCharacteristic(C.CurrentTemperature, this.clampCurrent(currentTemp));
+            this._tempSensorService.updateCharacteristic(C.CurrentTemperature, this.clampCurrent(currentTemp));
         }
 
         const targetTemp = this.readNumber(FC_TEMPERATURE, FI_COOLING_TARGET);
@@ -768,5 +779,21 @@ export class AirConditionerAccessory extends HubspaceAccessory{
         // which mode the unit is in.
         await this.write(FC_FAN_SPEED, FI_AC_FAN_SPEED, speed);
         this.pushState();
+    }
+
+    // ------------------------------------------------------------------
+    // Temperature sensor (so Home offers temperature automation triggers)
+    // ------------------------------------------------------------------
+
+    private configureTemperatureSensor(): void{
+        const C = this.platform.Characteristic;
+
+        this._tempSensorService.getCharacteristic(C.CurrentTemperature)
+            .setProps({
+                minValue: this._currentRange.min,
+                maxValue: this._currentRange.max,
+                minStep: this._currentRange.step
+            })
+            .onGet(this.getCurrentTemperature.bind(this));
     }
 }

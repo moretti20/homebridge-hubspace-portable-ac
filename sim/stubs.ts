@@ -77,11 +77,13 @@ class FakeService {
 
 class Fanv2 extends FakeService{ static UUID = 'Fanv2'; }
 class HeaterCooler extends FakeService{ static UUID = 'HeaterCooler'; }
+class TemperatureSensor extends FakeService{ static UUID = 'TemperatureSensor'; }
 class AccessoryInformation extends FakeService{ static UUID = 'AccessoryInformation'; }
 class ProtocolInformation extends FakeService{ static UUID = 'ProtocolInformation'; }
 
 (FakeService as any).Fanv2 = Fanv2;
 (FakeService as any).HeaterCooler = HeaterCooler;
+(FakeService as any).TemperatureSensor = TemperatureSensor;
 (FakeService as any).AccessoryInformation = AccessoryInformation;
 (FakeService as any).ProtocolInformation = ProtocolInformation;
 
